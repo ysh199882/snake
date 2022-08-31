@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+	#canvas{
+		display: block;
+		margin: 100px auto;
+	}
+	button {
+		display: inline-block;
+	}
+	.buttons {
+		margin: -80px auto;
+		width: 200px;
+	}
+	.note {
+		margin: 100px auto;
+		width: 600px;
+	}
+	</style>
+	<title>The Snake Game</title>
+</head>
+<body>
+	<canvas id="canvas" width="450" height="450"></canvas>
+	<div class="buttons">	
+		<button id="fast">Speed up</button>
+		<button id="low">Speed down</button>
+	</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+	<script>
+	$(document).ready(function (){
+		//建立画布
+		var canvas = $("#canvas")[0];
+		var ctx = canvas.getContext('2d');
+		var width = $("canvas").width();
+		var height = $("canvas").height();
+
+		//绘制背景
+		ctx.fillStyle = 'white';
+		ctx.fillRect(0, 0, width, height);
+		ctx.strokeStyle = 'black';
+		ctx.strokeRect(0, 0, width, height);
+
+
+		//将背景单元格用变量保存
+		var cellWidth = 10,
+			direction,
+			food,
+			score,
+			speed = 100;
+
+		//创建蛇（数组）
+		var snakeArray;	
+
+		function init (){
+			direction = 'right';
+			createSnake();
+			createFood();
+			score = 0; 
+
+			// 蛇的初始速度
+			if(typeof game_loop != 'undefined')	clearInterval(game_loop);
+			game_loop = setInterval(paint, speed);
+		}
+
+		init();
+
+		function createSnake (){
+			var length = 5; //蛇初始长度
+			snakeArray = [];
+			for(var i = length - 1; i >= 0; i--){
+				//蛇默认出现位置
+				snakeArray.push({x: i, y: 0});
+			}
+		}
+
+		function createFood (){
+			food = {
+				//随机生成食物位置
+				x: Math.round(Math.random()*44),
+				y: Math.round(Math.random()*44)
+			};
+		}
+
+		//绘制蛇
+		function paint (){
+			//填充
+			ctx.fillStyle = 'white';
+			ctx.fillRect(0, 0, width, height);
+      //描边
+			ctx.strokeStyle = 'black';
+			ctx.strokeRect(0, 0, width, height);
+
+			//移动
+			//如果食物出现在蛇头，就数组尾部加1
+			//蛇头位置
+			var nx = snakeArray[0].x;
+			var ny = snakeArray[0].y;
+
+			if(direction == 'right')	nx++;
+			else if(direction == 'left')	nx--;
+			else if(direction == 'up')	ny--;
+			else if(direction == 'down') ny++;
+
+			//触墙判断
+			if(nx == -1 || nx == width/cellWidth || ny == -1 || ny == height/cellWidth || checkCollision(nx, ny, snakeArray)) {
+				var answer = confirm("Game Over");
+				if(answer === true){
+					init();
+					return;
+				}else{
+					clearInterval(game_loop);
+					return;
+				}
+
+			}
+
+
+			//吃到食物就生成新蛇头，并分数+1
+			if(nx == food.x && ny == food.y) {
+				var tail = {x: nx, y: ny};//蛇尾坐标
+				score++;
+				
+				createFood();
+			}
+			else{
+				var tail = snakeArray.pop();
+				tail.x = nx; tail.y = ny;
+			}
+
+			snakeArray.unshift(tail);
+
+      //吃食后再次绘制蛇
+			for(var i = 0; i < snakeArray.length; i++){
+				var cell = snakeArray[i];
+				paintCell(cell.x, cell.y);
+			}
+
+			//重新生成食物
+			paintCell(food.x, food.y);
+      //绘制分数
+			var scoreText = 'Score: ' + score;
+			ctx.fillText(scoreText, 5, height - 5);
+		}
+
+		function paintCell (x, y){
+			ctx.fillStyle = 'blue';
+			ctx.fillRect(x * cellWidth, y * cellWidth, cellWidth, cellWidth);
+			ctx.strokeStyle = 'white';
+			ctx.strokeRect(x * cellWidth, y * cellWidth, cellWidth, cellWidth);
+		}
+
+    //检验数组是否存在于数组中
+		function checkCollision (x, y, array){
+			for(var i = 0; i < array.length; i++){
+				if(array[i].x === x && array[i].y === y){
+					return true;
+				}
+			}
+			return false;
+		}
+
+		$(document).keydown(function (e){
+			var keycode = e.which;
+			if(keycode == '37' && direction != 'right')	direction = 'left';
+			else if(keycode == '38'&& direction != 'down')	direction = 'up';
+			else if(keycode == '39'&& direction != 'left')	direction = 'right';
+			else if(keycode == '40'&& direction != 'up')	direction = 'down';
+		});
+
+		$('#fast').click(function(){
+			speed -= 20;
+		});
+		$('#low').click(function(){
+			speed += 20;
+		});
+	});
+	</script>
+</body>
+</html>

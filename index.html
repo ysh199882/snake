@@ -134,18 +134,18 @@
       //吃食后再次绘制蛇
 			for(var i = 0; i < snakeArray.length; i++){
 				var cell = snakeArray[i];
-				paintCell(cell.x, cell.y);
+				paintCell(cell.x, cell.y,'black');
 			}
 
 			//重新生成食物
-			paintCell(food.x, food.y);
+			paintCell(food.x, food.y,'red');
       //绘制分数
 			var scoreText = 'Score: ' + score;
 			ctx.fillText(scoreText, 5, height - 5);
 		}
 
-		function paintCell (x, y){
-			ctx.fillStyle = 'blue';
+		function paintCell (x, y,color){
+			ctx.fillStyle = color;
 			ctx.fillRect(x * cellWidth, y * cellWidth, cellWidth, cellWidth);
 			ctx.strokeStyle = 'white';
 			ctx.strokeRect(x * cellWidth, y * cellWidth, cellWidth, cellWidth);
